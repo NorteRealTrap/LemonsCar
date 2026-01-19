@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { X, CreditCard, Smartphone, Barcode, DollarSign, Check, AlertTriangle } from 'lucide-react@0.487.0';
 import { supabase } from '../../utils/supabase/client';
+import { emailService } from '../../utils/supabase/emailService';
 import { useAuth } from '../../contexts/AuthContext';
+import { toast } from 'sonner@2.0.3';
 
 interface CheckoutModalProps {
   isOpen: boolean;
@@ -102,6 +104,23 @@ export function CheckoutModal({ isOpen, onClose, booking, bookingId }: CheckoutM
           .from('bookings')
           .update({ status: 'confirmed' })
           .eq('id', bookingId);
+      }
+
+      // Enviar email de confirmação de pagamento
+      try {
+        await emailService.sendPaymentConfirmation({
+          customerName: user?.user_metadata?.full_name || 'Cliente',
+          customerEmail: user?.email || '',
+          amount: booking.service_price,
+          paymentMethod: selectedMethod === 'credit_card' ? 'Cartão de Crédito' :
+                         selectedMethod === 'debit_card' ? 'Cartão de Débito' :
+                         selectedMethod === 'pix' ? 'PIX' : 'Dinheiro',
+          transactionId: `txn_${Date.now()}`,
+        });
+        toast.success('Email de confirmação de pagamento enviado!');
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        toast.error('Erro ao enviar email de confirmação');
       }
 
       setStep('success');
@@ -314,7 +333,7 @@ export function CheckoutModal({ isOpen, onClose, booking, bookingId }: CheckoutM
             </button>
 
             <div className="mt-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-3 flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
               <p className="text-xs text-yellow-400">
                 <strong>Ambiente de Demonstração:</strong> Este é um checkout simulado para fins de teste. 
                 Nenhuma transação real será processada.

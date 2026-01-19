@@ -5,7 +5,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { LoginModal } from './auth/LoginModal';
 import { CheckoutModal } from './checkout/CheckoutModal';
 import { supabase } from '../utils/supabase/client';
+import { emailService } from '../utils/supabase/emailService';
 import { useSiteData } from '../contexts/SiteDataContext';
+import { toast } from 'sonner@2.0.3';
 
 // Icon mapping for services
 const iconMap: Record<string, any> = {
@@ -81,6 +83,24 @@ export function BookingSection({ preSelectedService }: BookingSectionProps) {
         .single();
 
       if (error) throw error;
+
+      // Enviar email de confirmação de agendamento
+      try {
+        await emailService.sendBookingConfirmation({
+          customerName: profile?.full_name || 'Cliente',
+          customerEmail: user.email || '',
+          serviceName: selectedService.name,
+          date: formData.date,
+          time: formData.time,
+          vehicleModel: formData.vehicleModel,
+          vehiclePlate: formData.vehiclePlate,
+          price: selectedService.price,
+        });
+        toast.success('Email de confirmação enviado!');
+      } catch (emailError) {
+        console.error('Erro ao enviar email:', emailError);
+        toast.error('Erro ao enviar email de confirmação');
+      }
 
       setBookingId(data.id);
       setCheckoutModalOpen(true);
