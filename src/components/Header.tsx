@@ -1,8 +1,9 @@
-import { Menu, X, User, LogIn } from 'lucide-react@0.487.0';
+import { Menu, X, User, LogIn, Shield } from 'lucide-react@0.487.0';
 import { useState } from 'react';
 import logo from 'figma:asset/eca4176b8d3b1a0c428ca7e1be088cc0422409ec.png';
 import { useAuth } from '../contexts/AuthContext';
 import { LoginModal } from './auth/LoginModal';
+import { AdminLoginModal } from './auth/AdminLoginModal';
 
 interface HeaderProps {
   activeSection: string;
@@ -12,6 +13,7 @@ interface HeaderProps {
 export function Header({ activeSection, onNavigate }: HeaderProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [adminLoginModalOpen, setAdminLoginModalOpen] = useState(false);
   const { user, profile } = useAuth();
 
   const menuItems = [
@@ -78,6 +80,15 @@ export function Header({ activeSection, onNavigate }: HeaderProps) {
                   Entrar
                 </button>
               )}
+
+              {/* Admin Button */}
+              <button
+                onClick={() => setAdminLoginModalOpen(true)}
+                className="flex items-center gap-2 ml-2 px-3 py-2 bg-gray-900 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-800 hover:border-primary/40 transition-all"
+                title="Painel administrativo"
+              >
+                <Shield className="w-4 h-4" />
+              </button>
             </nav>
 
             {/* Mobile Menu Button */}
@@ -107,11 +118,11 @@ export function Header({ activeSection, onNavigate }: HeaderProps) {
               ))}
               
               {/* Mobile User Menu */}
-              <div className="mt-4 pt-4 border-t border-primary/20">
+              <div className="mt-4 pt-4 border-t border-primary/20 space-y-2">
                 {user && profile ? (
                   <a
                     href="/dashboard"
-                    className="flex items-center gap-2 px-4 py-3 text-primary hover:bg-primary/10"
+                    className="flex items-center gap-2 px-4 py-3 text-primary hover:bg-primary/10 rounded-lg"
                   >
                     <User className="w-5 h-5" />
                     {profile.full_name}
@@ -128,6 +139,18 @@ export function Header({ activeSection, onNavigate }: HeaderProps) {
                     Entrar
                   </button>
                 )}
+
+                {/* Mobile Admin Button */}
+                <button
+                  onClick={() => {
+                    setAdminLoginModalOpen(true);
+                    setMenuOpen(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-3 bg-gray-900 border border-gray-700 text-gray-300 rounded-lg hover:bg-gray-800"
+                >
+                  <Shield className="w-5 h-5" />
+                  Painel Admin
+                </button>
               </div>
             </nav>
           )}
@@ -137,6 +160,10 @@ export function Header({ activeSection, onNavigate }: HeaderProps) {
       <LoginModal 
         isOpen={loginModalOpen} 
         onClose={() => setLoginModalOpen(false)} 
+      />
+      <AdminLoginModal 
+        isOpen={adminLoginModalOpen} 
+        onClose={() => setAdminLoginModalOpen(false)} 
       />
     </>
   );
